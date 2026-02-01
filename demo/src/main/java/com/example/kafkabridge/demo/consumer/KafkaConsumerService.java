@@ -4,6 +4,7 @@ import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
 
 import com.example.kafkabridge.demo.model.KafkaMessage;
+import com.example.kafkabridge.demo.model.UserDetails;
 import com.example.kafkabridge.demo.repository.MessageRepository;
 
 @Service
@@ -16,13 +17,17 @@ public class KafkaConsumerService {
     }
 
     @KafkaListener(topics = "demo_topic", groupId = "springboot_kafkabridge")
-    public void listen(String message) {
-        System.out.println("Received message: " + message);
+    public void listen(UserDetails userDetails) {
+        System.out.println("Received message: " + userDetails);
         
-        // Save to MongoDB
-        KafkaMessage kafkaMessage = new KafkaMessage(message);
-        repository.save(kafkaMessage);
-        
-        System.out.println("Saved to MongoDB with ID: " + kafkaMessage.getId());
+        try {
+            KafkaMessage kafkaMessage = new KafkaMessage(userDetails);
+            repository.save(kafkaMessage);
+            
+            System.out.println("Saved to MongoDB with ID: " + kafkaMessage.getId());
+        } catch (Exception e) {
+            System.err.println("Error saving message: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 }
